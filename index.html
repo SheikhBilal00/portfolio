@@ -458,6 +458,89 @@ body{
 .rv{opacity:0;transform:translateY(28px);transition:opacity .75s ease,transform .75s ease;}
 .rv.on{opacity:1;transform:none;}
 
+/* ─── MUSIC PLAYER ──────────────────────── */
+#music-player{
+  position:fixed;bottom:28px;right:28px;z-index:5000;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(2,5,9,.92);
+  border:1px solid var(--border);
+  padding:10px 16px;
+  backdrop-filter:blur(14px);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+  box-shadow:0 0 30px rgba(0,255,245,.12);
+  transition:box-shadow .3s;
+  min-width:220px;
+}
+#music-player:hover{box-shadow:0 0 40px rgba(0,255,245,.22);}
+#music-player.playing{border-color:rgba(0,255,245,.5);}
+
+/* animated bars */
+.music-bars{
+  display:flex;align-items:flex-end;gap:3px;height:18px;width:22px;flex-shrink:0;
+}
+.music-bars span{
+  display:block;width:3px;background:var(--c);border-radius:1px;
+  box-shadow:0 0 5px var(--c);
+  animation:none;
+  height:3px;
+  transition:height .1s;
+}
+.playing .music-bars span:nth-child(1){animation:bar1 .8s ease-in-out infinite;}
+.playing .music-bars span:nth-child(2){animation:bar2 .8s ease-in-out infinite .15s;}
+.playing .music-bars span:nth-child(3){animation:bar3 .8s ease-in-out infinite .3s;}
+.playing .music-bars span:nth-child(4){animation:bar4 .8s ease-in-out infinite .1s;}
+@keyframes bar1{0%,100%{height:4px}50%{height:14px}}
+@keyframes bar2{0%,100%{height:10px}50%{height:4px}}
+@keyframes bar3{0%,100%{height:6px}50%{height:18px}}
+@keyframes bar4{0%,100%{height:14px}50%{height:6px}}
+
+.music-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.music-track{
+  font-family:var(--font-mono);font-size:.58rem;color:var(--c);
+  letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 0 8px rgba(0,255,245,.4);
+}
+.music-sub{font-family:var(--font-mono);font-size:.5rem;color:var(--dim);letter-spacing:1px;}
+
+.music-controls{display:flex;align-items:center;gap:6px;}
+.mc-btn{
+  background:transparent;border:1px solid var(--border);color:var(--txt2);
+  width:28px;height:28px;cursor:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;transition:border-color .2s,color .2s,box-shadow .2s;
+  flex-shrink:0;
+}
+.mc-btn:hover{border-color:var(--c);color:var(--c);box-shadow:0 0 10px rgba(0,255,245,.2);}
+.mc-btn.active{border-color:var(--c);color:var(--c);background:rgba(0,255,245,.08);}
+
+.music-vol{
+  -webkit-appearance:none;appearance:none;
+  width:55px;height:2px;background:rgba(0,255,245,.15);
+  outline:none;cursor:none;
+}
+.music-vol::-webkit-slider-thumb{
+  -webkit-appearance:none;width:10px;height:10px;border-radius:50%;
+  background:var(--c);box-shadow:0 0 6px var(--c);cursor:none;
+}
+
+/* boot music prompt on loading screen */
+#boot-music-btn{
+  font-family:var(--font-mono);font-size:.6rem;letter-spacing:3px;
+  padding:8px 20px;background:transparent;
+  border:1px solid var(--c);color:var(--c);cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+  transition:background .2s,color .2s;
+  animation:btnPulse 2s ease-in-out infinite;
+}
+#boot-music-btn:hover{background:var(--c);color:#000;}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 8px rgba(0,255,245,.3);}50%{box-shadow:0 0 20px rgba(0,255,245,.7);}}
+.boot-music-skip{
+  font-family:var(--font-mono);font-size:.5rem;color:var(--dim);
+  letter-spacing:2px;cursor:pointer;text-decoration:underline;
+  background:none;border:none;
+}
+.boot-music-skip:hover{color:var(--txt2);}
+
 /* ─── RESPONSIVE ────────────────────────── */
 @media(max-width:1000px){
   #hero{grid-template-columns:1fr;}
@@ -485,6 +568,10 @@ body{
   <div class="l-sub">AI/ML ENGINEER · NEURAL INTERFACE v3.0</div>
   <div class="l-bar-wrap"><div class="l-bar"></div></div>
   <div class="l-msg" id="lmsg">BOOT_SEQUENCE INITIATED...</div>
+  <div id="music-prompt" style="display:none;flex-direction:column;align-items:center;gap:10px;margin-top:8px;">
+    <button id="boot-music-btn" onclick="bootWithMusic()">▶ ENABLE NEURAL SOUNDTRACK</button>
+    <button class="boot-music-skip" onclick="bootWithoutMusic()">SKIP · PROCEED IN SILENCE</button>
+  </div>
 </div>
 
 <!-- CURSORS -->
@@ -540,7 +627,7 @@ body{
       </div>
       <div class="btn-row">
         <a href="#projects" class="btn btn-c">VIEW INTEL REPORTS</a>
-        <a href="mailto:sheikhbial000@gmail.com" class="btn btn-m">INITIATE UPLINK</a>
+        <a href="/cdn-cgi/l/email-protection#b6c5ded3dfddded4dfd7da868686f6d1dbd7dfda98d5d9db" class="btn btn-m">INITIATE UPLINK</a>
       </div>
     </div>
     <div class="core-wrap">
@@ -772,7 +859,7 @@ body{
         <span style="display:block" class="to">ROLE        : AI/ML Engineer · Full-Stack Developer</span>
         <span style="display:block" class="to">LOCATION    : Kanpur, Uttar Pradesh · Remote-Ready</span>
         <span style="display:block" class="to">EDUCATION   : B.Tech CSE (AI) · University of Lucknow · CGPA 7.5/10</span>
-        <span style="display:block" class="to">CONTACT     : sheikhbial000@gmail.com · +91 7355767856</span>
+        <span style="display:block" class="to">CONTACT     : <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d2a1bab7bbb9bab0bbb3bee2e2e292b5bfb3bbbefcb1bdbf">[email&#160;protected]</a> · +91 7355767856</span>
         <span style="display:block" class="tc">// ─────────────────────────────────────────────────</span>
         <span style="display:block"><span class="tp">bilal@ai-core:~$</span> <span class="tw">cat mission.txt</span></span>
         <span style="display:block" class="ta">"Innovative AI/ML Engineer with production-grade ML solutions</span>
@@ -802,9 +889,9 @@ body{
     <div class="contact-grid">
       <div class="c-links">
         <p class="c-intro">Neural link established. Transmit mission parameters — open to AI/ML Engineer roles, data science contracts, and full-stack collaborations.</p>
-        <a href="mailto:sheikhbial000@gmail.com" class="c-link">
+        <a href="/cdn-cgi/l/email-protection#5d2e35383436353f343c316d6d6d1d3a303c3431733e3230" class="c-link">
           <div class="c-link-icon">MAIL</div>
-          <div><div class="c-link-label">// EMAIL CHANNEL</div><div class="c-link-val">sheikhbial000@gmail.com</div></div>
+          <div><div class="c-link-label">// EMAIL CHANNEL</div><div class="c-link-val"><span class="__cf_email__" data-cfemail="e5968d808c8e8d878c8489d5d5d5a58288848c89cb868a88">[email&#160;protected]</span></div></div>
         </a>
         <a href="tel:+917355767856" class="c-link">
           <div class="c-link-icon">TEL</div>
@@ -840,7 +927,24 @@ body{
 
 </div><!-- /app -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- MUSIC PLAYER WIDGET -->
+<div id="music-player">
+  <div class="music-bars">
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <div class="music-info">
+    <div class="music-track" id="track-name">NEURAL_AMBIENT_01</div>
+    <div class="music-sub">CYBERPUNK SOUNDTRACK · GENERATIVE</div>
+  </div>
+  <div class="music-controls">
+    <button class="mc-btn" id="btn-prev" onclick="prevTrack()" title="Previous">◀◀</button>
+    <button class="mc-btn" id="btn-play" onclick="toggleMusic()" title="Play/Pause">▶</button>
+    <button class="mc-btn" id="btn-next" onclick="nextTrack()" title="Next">▶▶</button>
+    <input type="range" class="music-vol" id="vol-slider" min="0" max="100" value="40" oninput="setVolume(this.value)" title="Volume">
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════
    BOOT SEQUENCE
@@ -855,18 +959,36 @@ const BOOT_MSGS = [
 ];
 let bi = 0;
 const lmsg = document.getElementById('lmsg');
+
+// Show music prompt after boot messages finish
 const iv = setInterval(() => {
   bi++;
-  if (bi < BOOT_MSGS.length) { lmsg.textContent = BOOT_MSGS[bi]; }
-  else {
+  if (bi < BOOT_MSGS.length) {
+    lmsg.textContent = BOOT_MSGS[bi];
+  } else {
     clearInterval(iv);
+    lmsg.textContent = 'SELECT AUDIO MODE...';
     setTimeout(() => {
-      const L = document.getElementById('LOAD');
-      L.style.opacity = '0';
-      setTimeout(() => { L.style.display = 'none'; initAll(); }, 900);
-    }, 300);
+      document.getElementById('music-prompt').style.display = 'flex';
+    }, 400);
   }
 }, 370);
+
+function bootWithMusic() {
+  document.getElementById('music-prompt').style.display = 'none';
+  lmsg.textContent = 'INITIALIZING AUDIO ENGINE...';
+  initAudio(true);
+  setTimeout(dismissLoader, 600);
+}
+function bootWithoutMusic() {
+  document.getElementById('music-prompt').style.display = 'none';
+  dismissLoader();
+}
+function dismissLoader() {
+  const L = document.getElementById('LOAD');
+  L.style.opacity = '0';
+  setTimeout(() => { L.style.display = 'none'; initAll(); }, 900);
+}
 
 function initAll() {
   cursor();
@@ -877,6 +999,286 @@ function initAll() {
   scrambleOnReveal();
   glitchFx();
   buildTicker();
+}
+
+/* ═══════════════════════════════════════════
+   WEB AUDIO — CYBERPUNK GENERATIVE MUSIC
+   Pure JS, no external files needed
+═══════════════════════════════════════════ */
+let audioCtx = null;
+let masterGain = null;
+let isPlaying = false;
+let currentTrack = 0;
+let activeNodes = [];
+let scheduleTimer = null;
+
+const TRACKS = [
+  { name: 'NEURAL_AMBIENT_01', bpm: 75,  scale: [0,3,7,10,12,15],  rootHz: 55,  style: 'ambient'  },
+  { name: 'CYBER_NOIR_02',     bpm: 90,  scale: [0,2,5,7,10,12,14],rootHz: 46,  style: 'noir'     },
+  { name: 'DATA_PULSE_03',     bpm: 110, scale: [0,3,5,7,10,12],   rootHz: 65,  style: 'pulse'    },
+  { name: 'VOID_SIGNAL_04',    bpm: 60,  scale: [0,2,4,7,9,12],    rootHz: 41,  style: 'void'     },
+];
+
+function initAudio(autoPlay) {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  masterGain.connect(audioCtx.destination);
+  updatePlayerUI();
+  if (autoPlay) startMusic();
+}
+
+/* ── note helper ── */
+function midiToHz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+function scaleNote(track, degree) {
+  const oct = Math.floor(degree / track.scale.length);
+  const semi = track.scale[degree % track.scale.length];
+  return track.rootHz * Math.pow(2, (semi + oct * 12) / 12);
+}
+
+/* ── reverb convolver ── */
+function makeReverb(ctx, seconds, decay) {
+  const len = ctx.sampleRate * seconds;
+  const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+  }
+  const conv = ctx.createConvolver(); conv.buffer = buf; return conv;
+}
+
+/* ── drone pad ── */
+function playDrone(track, startTime, duration) {
+  const rev = makeReverb(audioCtx, 3, 2);
+  const revGain = audioCtx.createGain(); revGain.gain.value = 0.18;
+  rev.connect(revGain); revGain.connect(masterGain);
+
+  [0, 7, 12].forEach((semi, i) => {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = i === 0 ? 'sawtooth' : 'sine';
+    osc.frequency.value = track.rootHz * Math.pow(2, semi / 12);
+    // slight detune for width
+    osc.detune.value = (i - 1) * 4 + Math.random() * 3;
+    g.gain.setValueAtTime(0, startTime);
+    g.gain.linearRampToValueAtTime(0.06 - i * 0.015, startTime + 2);
+    g.gain.linearRampToValueAtTime(0.04 - i * 0.01, startTime + duration - 1);
+    g.gain.linearRampToValueAtTime(0, startTime + duration);
+    osc.connect(g); g.connect(masterGain);
+    osc.connect(rev);
+    osc.start(startTime); osc.stop(startTime + duration);
+    activeNodes.push(osc, g);
+  });
+}
+
+/* ── arpeggio melody ── */
+function playArp(track, startTime) {
+  const stepTime = 60 / track.bpm / 2;
+  const noteCount = 16;
+  const rev = makeReverb(audioCtx, 1.5, 3);
+  const revGain = audioCtx.createGain(); revGain.gain.value = 0.12;
+  rev.connect(revGain); revGain.connect(masterGain);
+
+  // arp pattern varies by style
+  const patterns = {
+    ambient: [0,2,4,2,3,5,3,2, 4,6,4,2,3,2,0,1],
+    noir:    [0,3,5,3,2,0,5,7, 3,2,0,3,5,7,5,3],
+    pulse:   [0,2,3,5,7,5,3,2, 0,3,5,7,9,7,5,3],
+    void:    [0,4,7,4,2,4,7,9, 7,4,2,0,2,4,2,0],
+  };
+  const pat = patterns[track.style] || patterns.ambient;
+
+  for (let i = 0; i < noteCount; i++) {
+    const t = startTime + i * stepTime;
+    const deg = pat[i % pat.length];
+    const freq = scaleNote(track, deg);
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = track.style === 'pulse' ? 'square' : 'triangle';
+    osc.frequency.value = freq * 2; // one octave up
+    osc.detune.value = Math.random() * 6 - 3;
+    const vel = 0.04 + (i % 4 === 0 ? 0.04 : 0);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vel, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + stepTime * 0.9);
+    osc.connect(g); g.connect(masterGain);
+    osc.connect(rev);
+    osc.start(t); osc.stop(t + stepTime);
+    activeNodes.push(osc, g);
+  }
+}
+
+/* ── bass line ── */
+function playBass(track, startTime) {
+  const stepTime = 60 / track.bpm;
+  const bassPats = {
+    ambient: [0,0,7,0, 5,0,7,5],
+    noir:    [0,7,5,3, 0,7,5,0],
+    pulse:   [0,0,3,0, 5,3,0,5],
+    void:    [0,0,7,0, 0,5,7,0],
+  };
+  const pat = bassPats[track.style] || bassPats.ambient;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 300; filter.Q.value = 2;
+  filter.connect(masterGain);
+
+  for (let i = 0; i < 8; i++) {
+    const t = startTime + i * stepTime;
+    const semi = pat[i % pat.length];
+    const freq = track.rootHz * Math.pow(2, semi / 12);
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.12, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + stepTime * 0.85);
+    osc.connect(g); g.connect(filter);
+    osc.start(t); osc.stop(t + stepTime);
+    activeNodes.push(osc, g);
+  }
+}
+
+/* ── hi-hat / glitch percussion ── */
+function playPercussion(track, startTime) {
+  if (track.style === 'ambient' || track.style === 'void') return;
+  const stepTime = 60 / track.bpm / 2;
+  const hatPat =  [1,0,1,0, 1,1,0,1, 1,0,1,1, 0,1,1,0];
+  for (let i = 0; i < 16; i++) {
+    if (!hatPat[i]) continue;
+    const t = startTime + i * stepTime;
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let j = 0; j < d.length; j++) d[j] = Math.random() * 2 - 1;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const g = audioCtx.createGain();
+    const filt = audioCtx.createBiquadFilter();
+    filt.type = 'highpass'; filt.frequency.value = 8000;
+    g.gain.setValueAtTime(0.06, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+    src.connect(filt); filt.connect(g); g.connect(masterGain);
+    src.start(t); src.stop(t + 0.05);
+    activeNodes.push(src, g);
+  }
+}
+
+/* ── kick ── */
+function playKick(track, startTime) {
+  if (track.style === 'ambient') return;
+  const stepTime = 60 / track.bpm;
+  const kickPat = [1,0,0,1, 0,0,1,0];
+  for (let i = 0; i < 8; i++) {
+    if (!kickPat[i % kickPat.length]) continue;
+    const t = startTime + i * stepTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+    g.gain.setValueAtTime(0.35, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(t); osc.stop(t + 0.2);
+    activeNodes.push(osc, g);
+  }
+}
+
+/* ── schedule one bar ── */
+function scheduleBar(track, startTime) {
+  const barDuration = (60 / track.bpm) * 8;
+  playDrone(track, startTime, barDuration + 0.5);
+  playArp(track, startTime);
+  playBass(track, startTime);
+  playPercussion(track, startTime);
+  playKick(track, startTime);
+}
+
+/* ── main loop ── */
+function startMusic() {
+  if (!audioCtx) return;
+  isPlaying = true;
+  const track = TRACKS[currentTrack];
+  const barDuration = (60 / track.bpm) * 8;
+  let nextBar = audioCtx.currentTime + 0.1;
+
+  // schedule 2 bars ahead
+  scheduleBar(track, nextBar);
+  scheduleBar(track, nextBar + barDuration);
+  nextBar += barDuration * 2;
+
+  scheduleTimer = setInterval(() => {
+    if (!isPlaying) return;
+    scheduleBar(TRACKS[currentTrack], nextBar);
+    nextBar += (60 / TRACKS[currentTrack].bpm) * 8;
+    // cleanup old finished nodes
+    activeNodes = activeNodes.filter(n => {
+      try { return n.context && n.context.state !== 'closed'; } catch { return false; }
+    });
+  }, (60 / track.bpm) * 8000 * 0.75);
+
+  updatePlayerUI();
+}
+
+function stopMusic() {
+  isPlaying = false;
+  clearInterval(scheduleTimer);
+  // fade out gracefully
+  if (masterGain) {
+    masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.8);
+    setTimeout(() => {
+      activeNodes.forEach(n => { try { n.stop && n.stop(); } catch {} });
+      activeNodes = [];
+      masterGain.gain.setValueAtTime(parseFloat(document.getElementById('vol-slider').value) / 100, audioCtx.currentTime);
+    }, 900);
+  }
+  updatePlayerUI();
+}
+
+function toggleMusic() {
+  if (!audioCtx) { initAudio(true); return; }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (isPlaying) stopMusic();
+  else startMusic();
+}
+
+function nextTrack() {
+  const wasPlaying = isPlaying;
+  if (isPlaying) stopMusic();
+  currentTrack = (currentTrack + 1) % TRACKS.length;
+  updatePlayerUI();
+  if (wasPlaying) setTimeout(startMusic, 950);
+}
+
+function prevTrack() {
+  const wasPlaying = isPlaying;
+  if (isPlaying) stopMusic();
+  currentTrack = (currentTrack - 1 + TRACKS.length) % TRACKS.length;
+  updatePlayerUI();
+  if (wasPlaying) setTimeout(startMusic, 950);
+}
+
+function setVolume(val) {
+  if (masterGain) masterGain.gain.setValueAtTime(val / 100, audioCtx.currentTime);
+}
+
+function updatePlayerUI() {
+  const player = document.getElementById('music-player');
+  const playBtn = document.getElementById('btn-play');
+  const trackName = document.getElementById('track-name');
+  if (!player) return;
+  if (isPlaying) {
+    player.classList.add('playing');
+    playBtn.textContent = '⏸';
+    playBtn.classList.add('active');
+  } else {
+    player.classList.remove('playing');
+    playBtn.textContent = '▶';
+    playBtn.classList.remove('active');
+  }
+  trackName.textContent = TRACKS[currentTrack].name;
 }
 
 /* ═══════════════════════════════════════════
@@ -1109,15 +1511,4 @@ function buildTicker() {
 /* ═══════════════════════════════════════════
    CONTACT SEND
 ═══════════════════════════════════════════ */
-function sendMsg(btn) {
-  const orig = btn.textContent;
-  btn.textContent = 'ENCODING...'; btn.style.opacity = '.5';
-  setTimeout(() => {
-    btn.textContent = 'TRANSMISSION SENT ✓';
-    btn.style.borderColor = 'var(--g)'; btn.style.color = 'var(--g)'; btn.style.opacity = '1';
-    setTimeout(() => { btn.textContent = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 3200);
-  }, 1300);
-}
-</script>
-</body>
-</html>
+func
