@@ -523,23 +523,75 @@ body{
   background:var(--c);box-shadow:0 0 6px var(--c);cursor:none;
 }
 
-/* boot music prompt on loading screen */
-#boot-music-btn{
-  font-family:var(--font-mono);font-size:.6rem;letter-spacing:3px;
-  padding:8px 20px;background:transparent;
-  border:1px solid var(--c);color:var(--c);cursor:pointer;
+/* ── AUDIO CHOICE OVERLAY (appears after boot) ── */
+#audio-overlay{
+  position:fixed;inset:0;z-index:9000;
+  display:none;
+  align-items:center;justify-content:center;
+  background:rgba(2,5,9,.92);
+  backdrop-filter:blur(18px);
+  animation:aoFadeIn .6s ease forwards;
+}
+@keyframes aoFadeIn{from{opacity:0;}to{opacity:1;}}
+.ao-box{
+  display:flex;flex-direction:column;align-items:center;gap:28px;
+  border:1px solid var(--border);
+  padding:50px 60px;
+  background:rgba(0,20,30,.8);
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));
+  box-shadow:0 0 60px rgba(0,255,245,.1);
+  position:relative;
+  max-width:480px;width:90%;
+  text-align:center;
+}
+.ao-box::before{content:'';position:absolute;top:0;right:0;width:40px;height:40px;border-top:1px solid var(--c);border-right:1px solid var(--c);}
+.ao-box::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:40px;border-bottom:1px solid var(--c);border-left:1px solid var(--c);}
+.ao-icon{
+  font-size:2.5rem;
+  color:var(--c);
+  text-shadow:0 0 30px var(--c);
+  animation:aoPulse 1.5s ease-in-out infinite;
+}
+@keyframes aoPulse{0%,100%{text-shadow:0 0 20px var(--c);}50%{text-shadow:0 0 50px var(--c),0 0 80px rgba(0,255,245,.4);}}
+.ao-title{
+  font-family:var(--font-head);font-size:1.1rem;font-weight:700;
+  color:#fff;letter-spacing:4px;
+  text-shadow:0 0 20px rgba(0,255,245,.4);
+}
+.ao-sub{
+  font-family:var(--font-mono);font-size:.62rem;
+  color:var(--txt2);letter-spacing:2px;line-height:1.8;
+  margin-top:-12px;
+}
+.ao-tracks{
+  display:flex;flex-direction:column;gap:6px;width:100%;
+}
+.ao-track-item{
+  font-family:var(--font-mono);font-size:.56rem;color:var(--dim);
+  letter-spacing:1px;display:flex;align-items:center;gap:8px;
+  padding:5px 10px;border:1px solid rgba(0,255,245,.08);
+  background:rgba(0,255,245,.02);
+}
+.ao-track-item::before{content:'♪';color:var(--c);font-size:.6rem;}
+.ao-track-bpm{margin-left:auto;color:var(--y);font-size:.5rem;}
+.ao-buttons{display:flex;gap:14px;width:100%;}
+.ao-btn{
+  flex:1;font-family:var(--font-mono);font-size:.68rem;letter-spacing:3px;
+  padding:14px 20px;background:transparent;cursor:pointer;
   clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
-  transition:background .2s,color .2s;
-  animation:btnPulse 2s ease-in-out infinite;
+  position:relative;overflow:hidden;transition:color .3s;font-weight:600;
+  border:none;
 }
-#boot-music-btn:hover{background:var(--c);color:#000;}
-@keyframes btnPulse{0%,100%{box-shadow:0 0 8px rgba(0,255,245,.3);}50%{box-shadow:0 0 20px rgba(0,255,245,.7);}}
-.boot-music-skip{
+.ao-btn-play{border:1px solid var(--c);color:var(--c);}
+.ao-btn-play::before{content:'';position:absolute;inset:0;background:var(--c);transform:translateX(-101%);transition:transform .3s;z-index:-1;}
+.ao-btn-play:hover{color:#000;}
+.ao-btn-play:hover::before{transform:translateX(0);}
+.ao-btn-mute{border:1px solid var(--dim);color:var(--dim);}
+.ao-btn-mute:hover{border-color:var(--txt2);color:var(--txt2);}
+.ao-note{
   font-family:var(--font-mono);font-size:.5rem;color:var(--dim);
-  letter-spacing:2px;cursor:pointer;text-decoration:underline;
-  background:none;border:none;
+  letter-spacing:1px;margin-top:-10px;
 }
-.boot-music-skip:hover{color:var(--txt2);}
 
 /* ─── RESPONSIVE ────────────────────────── */
 @media(max-width:1000px){
@@ -562,15 +614,31 @@ body{
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- LOADING — auto-completes, no blocking -->
 <div id="LOAD">
   <div class="l-logo">S·B·A</div>
   <div class="l-sub">AI/ML ENGINEER · NEURAL INTERFACE v3.0</div>
   <div class="l-bar-wrap"><div class="l-bar"></div></div>
   <div class="l-msg" id="lmsg">BOOT_SEQUENCE INITIATED...</div>
-  <div id="music-prompt" style="display:none;flex-direction:column;align-items:center;gap:10px;margin-top:8px;">
-    <button id="boot-music-btn" onclick="bootWithMusic()">▶ ENABLE NEURAL SOUNDTRACK</button>
-    <button class="boot-music-skip" onclick="bootWithoutMusic()">SKIP · PROCEED IN SILENCE</button>
+</div>
+
+<!-- AUDIO CHOICE OVERLAY — appears after boot, non-blocking -->
+<div id="audio-overlay">
+  <div class="ao-box">
+    <div class="ao-icon">◈</div>
+    <div class="ao-title">NEURAL SOUNDTRACK</div>
+    <div class="ao-sub">4 GENERATIVE CYBERPUNK TRACKS<br>SYNTHESIZED LIVE · NO DOWNLOADS</div>
+    <div class="ao-tracks">
+      <div class="ao-track-item">NEURAL_AMBIENT_01 — Deep Drone Pads<span class="ao-track-bpm">75 BPM</span></div>
+      <div class="ao-track-item">CYBER_NOIR_02 — Dark Jazz Noir<span class="ao-track-bpm">90 BPM</span></div>
+      <div class="ao-track-item">DATA_PULSE_03 — Driving Pulse<span class="ao-track-bpm">110 BPM</span></div>
+      <div class="ao-track-item">VOID_SIGNAL_04 — Atmospheric Void<span class="ao-track-bpm">60 BPM</span></div>
+    </div>
+    <div class="ao-buttons">
+      <button class="ao-btn ao-btn-play" onclick="audioChoice(true)">▶ PLAY MUSIC</button>
+      <button class="ao-btn ao-btn-mute" onclick="audioChoice(false)">✕ MUTE</button>
+    </div>
+    <div class="ao-note">// You can toggle music anytime via the player widget (bottom-right)</div>
   </div>
 </div>
 
@@ -627,7 +695,7 @@ body{
       </div>
       <div class="btn-row">
         <a href="#projects" class="btn btn-c">VIEW INTEL REPORTS</a>
-        <a href="mailto:sheikhbial000@gmail.com" class="btn btn-m">INITIATE UPLINK</a>
+        <a href="#contact" class="btn btn-m">INITIATE UPLINK</a>
       </div>
     </div>
     <div class="core-wrap">
@@ -859,7 +927,7 @@ body{
         <span style="display:block" class="to">ROLE        : AI/ML Engineer · Full-Stack Developer</span>
         <span style="display:block" class="to">LOCATION    : Kanpur, Uttar Pradesh · Remote-Ready</span>
         <span style="display:block" class="to">EDUCATION   : B.Tech CSE (AI) · University of Lucknow · CGPA 7.5/10</span>
-        <span style="display:block" class="to">CONTACT     : sheikhbial000@gmail.com · +91 7355767856</span>
+        <span style="display:block" class="to">CONTACT     : sheikhbial000&#64;gmail&#46;com · +91 7355767856</span>
         <span style="display:block" class="tc">// ─────────────────────────────────────────────────</span>
         <span style="display:block"><span class="tp">bilal@ai-core:~$</span> <span class="tw">cat mission.txt</span></span>
         <span style="display:block" class="ta">"Innovative AI/ML Engineer with production-grade ML solutions</span>
@@ -889,9 +957,9 @@ body{
     <div class="contact-grid">
       <div class="c-links">
         <p class="c-intro">Neural link established. Transmit mission parameters — open to AI/ML Engineer roles, data science contracts, and full-stack collaborations.</p>
-        <a href="mailto:sheikhbial000@gmail.com" class="c-link">
+        <a href="#" onclick="window.location.href=atob(this.dataset.e);return false;" data-e="bWFpbHRvOnNoZWlraGJpYWwwMDBAZ21haWwuY29t" class="c-link">
           <div class="c-link-icon">MAIL</div>
-          <div><div class="c-link-label">// EMAIL CHANNEL</div><div class="c-link-val">sheikhbial000@gmail.com</div></div>
+          <div><div class="c-link-label">// EMAIL CHANNEL</div><div class="c-link-val">sheikhbial000&#64;gmail&#46;com</div></div>
         </a>
         <a href="tel:+917355767856" class="c-link">
           <div class="c-link-icon">TEL</div>
@@ -947,7 +1015,7 @@ body{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════
-   BOOT SEQUENCE
+   BOOT SEQUENCE — auto-completes, no blocking
 ═══════════════════════════════════════════ */
 const BOOT_MSGS = [
   'BOOT_SEQUENCE INITIATED...',
@@ -960,34 +1028,45 @@ const BOOT_MSGS = [
 let bi = 0;
 const lmsg = document.getElementById('lmsg');
 
-// Show music prompt after boot messages finish
 const iv = setInterval(() => {
   bi++;
   if (bi < BOOT_MSGS.length) {
     lmsg.textContent = BOOT_MSGS[bi];
   } else {
     clearInterval(iv);
-    lmsg.textContent = 'SELECT AUDIO MODE...';
-    setTimeout(() => {
-      document.getElementById('music-prompt').style.display = 'flex';
-    }, 400);
+    lmsg.textContent = 'ALL SYSTEMS NOMINAL.';
+    // Boot done — dismiss loader, load portfolio, THEN show audio overlay
+    setTimeout(dismissLoader, 500);
   }
 }, 370);
 
-function bootWithMusic() {
-  document.getElementById('music-prompt').style.display = 'none';
-  lmsg.textContent = 'INITIALIZING AUDIO ENGINE...';
-  initAudio(true);
-  setTimeout(dismissLoader, 600);
-}
-function bootWithoutMusic() {
-  document.getElementById('music-prompt').style.display = 'none';
-  dismissLoader();
-}
 function dismissLoader() {
   const L = document.getElementById('LOAD');
   L.style.opacity = '0';
-  setTimeout(() => { L.style.display = 'none'; initAll(); }, 900);
+  setTimeout(() => {
+    L.style.display = 'none';
+    initAll(); // portfolio fully loads
+    // Show audio choice overlay after a short delay so portfolio is visible behind it
+    setTimeout(showAudioOverlay, 600);
+  }, 900);
+}
+
+function showAudioOverlay() {
+  const ov = document.getElementById('audio-overlay');
+  ov.style.display = 'flex';
+}
+
+function audioChoice(playMusic) {
+  const ov = document.getElementById('audio-overlay');
+  // Fade out overlay
+  ov.style.transition = 'opacity .5s ease';
+  ov.style.opacity = '0';
+  setTimeout(() => { ov.style.display = 'none'; }, 500);
+
+  if (playMusic) {
+    initAudio(true); // start music
+  }
+  // if mute, just close — music player widget still available bottom-right
 }
 
 function initAll() {
@@ -1503,12 +1582,4 @@ function glitchFx() {
 ═══════════════════════════════════════════ */
 function buildTicker() {
   const items = ['PYTHON', 'TENSORFLOW', 'PYTORCH', 'BERT / NLP', 'SCIKIT-LEARN', 'OPENCV', 'PYSPARK', 'AWS EC2/S3', 'DOCKER', 'FLASK', 'REACT NATIVE', 'FIREBASE', 'LANGCHAIN', 'CI/CD', 'POWER BI', 'TESSERACT OCR', 'SQL', 'JAVASCRIPT'];
-  const wrap = document.getElementById('ticker-inner');
-  const str = items.map(i => `<span class="t-item"><b>${i}</b></span>`).join('');
-  wrap.innerHTML = str + str;
-}
-
-/* ═══════════════════════════════════════════
-   CONTACT SEND
-═══════════════════════════════════════════ */
-func
+  const wrap = document.getElement
